@@ -13,13 +13,14 @@ function App() {
     changeChain,
     balance,
     signMessage,
+    currentWallet,
   } = useMetamask()
 
   return (
     <>
       {' '}
       <div className='flex items-center justify-center h-screen'>
-        {isWalletConnected && walletAddress && chain ? (
+        {isWalletConnected && walletAddress && chain && currentWallet ? (
           <>
             <h1>
               Wallet Address: {walletAddress} <br /> Current Chain:{' '}

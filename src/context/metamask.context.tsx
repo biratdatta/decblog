@@ -20,6 +20,7 @@ interface AppContextInterface {
   balance: any
   connectWalletconnect: Function
   signMessage: Function
+  currentWallet: any
 }
 
 const MetamaskContext: Context<AppContextInterface | null> =
@@ -34,6 +35,8 @@ enum Wallet {
   'Walletconnect' = 'Walletconnect',
 }
 
+let currentWallet: Wallet | null = null
+
 export const MetaMaskProvider = ({ children }: Props) => {
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
@@ -41,8 +44,12 @@ export const MetaMaskProvider = ({ children }: Props) => {
   const [balance, setBalance] = useState<string | null>(null)
   const [fetching, setFetching] = useState<boolean | null>(null)
   const [connector, setConnector] = useState<WalletConnect | null>(null)
-  const [currentWallet, setCurrentWallet] = useState<Wallet | null>(null)
+  // const [currentWallet, setCurrentWallet] = useState<Wallet | null>(null)
   const [provider, setProvider] = useState<Web3Provider | null>(null)
+
+  useEffect(() => {
+    console.log(currentWallet)
+  }, [currentWallet])
 
   useEffect(() => {
     getBalance()
@@ -50,6 +57,9 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
   const connectWalletconnect = async () => {
     try {
+      // setCurrentWallet(Wallet.Walletconnect)
+      currentWallet = Wallet.Walletconnect
+
       const walletConnectProvider = new WalletConnectProvider({
         rpc: RPC_DICT,
       })
@@ -71,8 +81,6 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
       const account = accounts[0]
       setIsWalletConnected(true)
-
-      setCurrentWallet(Wallet.Walletconnect)
 
       setWalletAddress(account)
 
@@ -117,6 +125,9 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
   const connectMetamask = async () => {
     try {
+      // setCurrentWallet(Wallet.Metamask)
+      currentWallet = Wallet.Metamask
+
       if (window.ethereum) {
         const accounts = await window.ethereum.request({
           method: 'eth_requestAccounts',
@@ -128,8 +139,6 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
         const account = accounts[0]
         setIsWalletConnected(true)
-
-        setCurrentWallet(Wallet.Metamask)
 
         setWalletAddress(account)
 
@@ -188,7 +197,7 @@ export const MetaMaskProvider = ({ children }: Props) => {
   }
 
   const handleChainChanged = async (chainId: string) => {
-    if (currentWallet == Wallet.Metamask) {
+    if (currentWallet === Wallet.Metamask) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
 
       provider.on('accountsChanged', handleAccountsChanged)
@@ -279,6 +288,7 @@ export const MetaMaskProvider = ({ children }: Props) => {
         setIsWalletConnected,
         balance,
         signMessage,
+        currentWallet,
       }}
     >
       {children}
