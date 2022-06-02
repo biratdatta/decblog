@@ -59,9 +59,9 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
       const web3Provider = new providers.Web3Provider(walletConnectProvider)
 
-      web3Provider.on('accountsChanged', handleAccountsChanged)
-      web3Provider.on('chainChanged', handleChainChanged)
-      web3Provider.on('disconnect', handleDisconnect)
+      walletConnectProvider.on('accountsChanged', handleAccountsChanged)
+      walletConnectProvider.on('chainChanged', handleChainChanged)
+      walletConnectProvider.on('disconnect', handleDisconnect)
 
       setProvider(web3Provider)
 
@@ -139,9 +139,9 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
         const provider = new ethers.providers.Web3Provider(window.ethereum)
 
-        provider.on('accountsChanged', handleAccountsChanged)
-        provider.on('chainChanged', handleChainChanged)
-        provider.on('disconnect', handleDisconnect)
+        window.ethereum.on('accountsChanged', handleAccountsChanged)
+        window.ethereum.on('chainChanged', handleChainChanged)
+        window.ethereum.on('disconnect', handleDisconnect)
 
         setProvider(provider)
       } else {
@@ -188,6 +188,31 @@ export const MetaMaskProvider = ({ children }: Props) => {
   }
 
   const handleChainChanged = async (chainId: string) => {
+    if (currentWallet == Wallet.Metamask) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+
+      provider.on('accountsChanged', handleAccountsChanged)
+      provider.on('chainChanged', handleChainChanged)
+      provider.on('disconnect', handleDisconnect)
+
+      setProvider(provider)
+    } else {
+      const walletConnectProvider = new WalletConnectProvider({
+        rpc: RPC_DICT,
+      })
+
+      //  Enable session (triggers QR Code modal)
+      await walletConnectProvider.enable()
+
+      const web3Provider = new providers.Web3Provider(walletConnectProvider)
+
+      walletConnectProvider.on('accountsChanged', handleAccountsChanged)
+      walletConnectProvider.on('chainChanged', handleChainChanged)
+      walletConnectProvider.on('disconnect', handleDisconnect)
+
+      setProvider(web3Provider)
+    }
+
     const chainAsInt = parseInt(chainId)
 
     setChain(chainAsInt)
@@ -215,6 +240,20 @@ export const MetaMaskProvider = ({ children }: Props) => {
 
         setProvider(provider)
       } else {
+        const walletConnectProvider = new WalletConnectProvider({
+          rpc: RPC_DICT,
+        })
+
+        //  Enable session (triggers QR Code modal)
+        await walletConnectProvider.enable()
+
+        const web3Provider = new providers.Web3Provider(walletConnectProvider)
+
+        walletConnectProvider.on('accountsChanged', handleAccountsChanged)
+        walletConnectProvider.on('chainChanged', handleChainChanged)
+        walletConnectProvider.on('disconnect', handleDisconnect)
+
+        setProvider(web3Provider)
       }
 
       setChain(chainId)
